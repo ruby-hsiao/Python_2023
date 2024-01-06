@@ -4,19 +4,23 @@ import urequests as requests
 from machine import WDT, Timer, ADC, RTC
 
 
+ssid = 'RHS'
+pwd = '1526314a'
+
+# enable station interface and connect to WiFi access point
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.disconnect()#反覆測試才加上這個斷線
+wlan.connect(ssid, pwd)
+
 #連線等待10秒
 def connect():
-    # enable station interface and connect to WiFi access point
-    nic = network.WLAN(network.STA_IF)
-    nic.active(True)
-    nic.connect('RHS', '1526314a')
-
     max_wait = 10
 
     #處理正在連線
     while max_wait > 0:
         max_wait -= 1
-        status = nic.status()
+        status = wlan.status()
         if status < 0 or status >=3:
             break
         print("等待連線")
@@ -25,7 +29,7 @@ def connect():
 
         
     #沒有wifi的處理
-    if nic.status() != 3:
+    if wlan.status() != 3:
         #連線失敗,重新開機
         #wdt = WDT(timeout=2000)
         #wdt.feed()
@@ -33,8 +37,17 @@ def connect():
         
     else:
         print("成功連線")
-        print(nic.ifconfig())
+        print(wlan.ifconfig())
 
+def reconnect():
+    if wlan.status() == 3: #還在連線, 只是傳送的server無回應
+        print(f"無法連線({wlan.status()})")
+        return
+    else:
+        print("嘗試重新連線")
+        wlan.disconnect()
+        wlan.connect(ssid, password)
+        connect()
 
 def alert(t:float):
     rtc = RTC()
@@ -48,7 +61,19 @@ def alert(t:float):
     date_str = f'{year}-{month}-{date} {hour}:{minute}:{second}'
     
     print('要爆炸了!')
-    response = requests.get(f'https://hook.eu2.make.com/ij57vtw5jvkaj1p5asl6j1fv3835nu4e?name=我的家電&date={date_str}&temperature={t}')
+    
+    try:
+        response = requests.get(f'https://hook.eu2.make.com/ij57vtw5jvkaj1p5asl6j1fv3835nu4e?name=我的家電2&date={date_str}&temperature={t}')
+    except:
+        reconnect()
+    else:
+        if response.status_code == 200:
+            print("傳送成功")
+        else:
+            print("server 有錯誤訊息")
+            print(f'status_code:{response.status_code}')
+        response.close()    
+        
     print(help(response))
     response.close()
     
