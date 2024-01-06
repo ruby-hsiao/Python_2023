@@ -1,7 +1,8 @@
 import network
 import time
-from machine import WDT
+from machine import WDT, Timer
 
+#連線等待10秒
 def connect():
     # enable station interface and connect to WiFi access point
     nic = network.WLAN(network.STA_IF)
@@ -31,6 +32,13 @@ def connect():
     else:
         print("成功連線")
         print(nic.ifconfig())
-        
+
+def doTimer(t:Timer):
+    print("Reconnect iphone wifi...")
+    t.deinit()
+
 connect()
+#若連線10秒不成功，可以用Timer來接續處理
+tim = Timer()
+tim.init(period=1000, callback=doTimer)
 
