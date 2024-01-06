@@ -1,7 +1,7 @@
 import network
 import time
 import urequests as requests
-from machine import WDT, Timer, ADC
+from machine import WDT, Timer, ADC, RTC
 
 
 #連線等待10秒
@@ -36,9 +36,19 @@ def connect():
         print(nic.ifconfig())
 
 
-def alert():
+def alert(t:float):
+    rtc = RTC()
+    date_tuple = rtc.datetime()
+    year = date_tuple[0]
+    month = date_tuple[1]
+    date = date_tuple[2]
+    hour = date_tuple[4]
+    minute = date_tuple[5]
+    second = date_tuple[6]
+    date_str = f'{year}-{month}-{date} {hour}:{minute}:{second}'
+    
     print('要爆炸了!')
-    response = requests.get('https://hook.eu2.make.com/ij57vtw5jvkaj1p5asl6j1fv3835nu4e?name=pico&date=202401061405&temperature=28.5')
+    response = requests.get(f'https://hook.eu2.make.com/ij57vtw5jvkaj1p5asl6j1fv3835nu4e?name=我的家電&date={date_str}&temperature={t}')
     print(help(response))
     response.close()
     
@@ -52,7 +62,7 @@ def doTimer(t:Timer):
     print(delta)
     #溫度超過24度,並且發送alert()的時間已經大於60秒
     if temperature >= 27 and delta >= 60 * 1000:        
-        alert()
+        alert(temperature)
         start = time.ticks_ms()#重新設定計時的時間
         
 
