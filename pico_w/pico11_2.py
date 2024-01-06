@@ -1,6 +1,8 @@
 import network
 import time
+import urequests as requests
 from machine import WDT, Timer, ADC
+
 
 #連線等待10秒
 def connect():
@@ -36,6 +38,9 @@ def connect():
 
 def alert():
     print('要爆炸了!')
+    response = requests.get('https://hook.eu2.make.com/ij57vtw5jvkaj1p5asl6j1fv3835nu4e?name=pico&date=202401061405&temperature=28.5')
+    print(help(response))
+    response.close()
     
 def doTimer(t:Timer):
     global start
@@ -46,7 +51,7 @@ def doTimer(t:Timer):
     delta = time.ticks_diff(time.ticks_ms(), start)
     print(delta)
     #溫度超過24度,並且發送alert()的時間已經大於60秒
-    if temperature >= 24 and delta >= 60 * 1000:        
+    if temperature >= 27 and delta >= 60 * 1000:        
         alert()
         start = time.ticks_ms()#重新設定計時的時間
         
