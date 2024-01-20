@@ -19,15 +19,20 @@ while True:
     #解決彈跳電容的錢
     #switch button
     if button.value():
-        is_press = True
+        #發生彈跳的解法
+        time.sleep_ms(50)
+        if button.value():
+            is_press = True
     elif is_press:
-        print('release')
-        led_status = not led_status
-        print(f'led_status={led_status}')
-        led.value(led_status)
-        is_press = False
+        time.sleep_ms(50)
+        if button.value() == False:
+            print('release')
+            led_status = not led_status
+            print(f'led_status={led_status}')
+            led.value(led_status)
+            is_press = False
  
-    time.sleep_ms(200)
+    #time.sleep_ms(200)
         
     
 '''
